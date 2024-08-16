@@ -117,7 +117,6 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
           chatroom.users.filter((id: string) => id !== userData?.id)[0]
         ],
     };
-
     console.log('Chatroom data:', data);
     setSelectedChatRoom(data);
   };

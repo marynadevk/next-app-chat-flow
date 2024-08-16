@@ -67,7 +67,6 @@ const ChatRoom: FC<Props> = ({ selectedChatRoom }) => {
         messagesContainerRef.current.scrollHeight;
     }
   };
-  console.log('messages', messages);
 
   return (
     <div className='flex flex-col h-screen'>

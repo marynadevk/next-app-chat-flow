@@ -9,7 +9,6 @@ type Props = {
 };
 
 const ChatListItem: FC<Props> = ({ avatarUrl, name, latestMessage, type }) => {
-  console.log('avatarUrl', avatarUrl);
   return (
     <div className="flex items-center p-4 border-b border-gray-200 relative hover:cursor-pointer">
       <div className="flex-shrink-0 mr-4 relative">
