@@ -65,14 +65,12 @@ const LoginPage = () => {
 
   return (
     <div className="flex justify-center items-center h-screen font-primary p-10 m-2">
-      {/*form*/}
       <form
         onSubmit={handleSubmit}
         className="space-y-4 w-full max-w-2xl shadow-lg p-10"
       >
         <ChatName />
 
-        {/*email*/}
         <div>
           <label className="label">
             <span className="text-base label-text">Email</span>
@@ -88,7 +86,6 @@ const LoginPage = () => {
           {errors.email && <span className="text-red-500">{errors.email}</span>}
         </div>
 
-        {/*password*/}
         <div>
           <label className="label">
             <span className="text-base label-text">Password</span>
