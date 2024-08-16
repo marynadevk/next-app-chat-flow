@@ -36,7 +36,7 @@ Chat Flow is a real-time chat application built using Next.js, React, and server
 
    ```bash
    git clone https://github.com/marynadevk/next-app-chat-flow.git
-   cd next-app-chat-flow
+   cd nextjs-firebase-chat-flow
    ```
 2. **Install dependencies, run:**
 ```sh
