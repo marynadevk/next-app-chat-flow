@@ -37,7 +37,7 @@ const MessageCardItem: FC<Props> = ({ message, me, other }) => {
         )}
       </div>
 
-      <div className={` text-white p-2 rounded-md ${isMessageFromMe ? 'bg-[#e0b1cb] self-end' : 'bg-[#5e548e] self-start'}`}>
+      <div className={` text-white p-2 rounded-md ${isMessageFromMe ? 'bg-custom-hover self-end' : 'bg-custom-primary self-start'}`}>
         {
           message.image && <img src={message.image} className='max-h-60 w-60 mb-4' />
         }

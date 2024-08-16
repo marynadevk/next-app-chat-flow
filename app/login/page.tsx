@@ -106,7 +106,7 @@ const LoginPage = () => {
         <div>
           <button
             type="submit"
-            className="btn btn-block bg-[#5e548e] hover:bg-[#e0b1cb] text-white"
+            className="btn btn-block bg-custom-primary hover:bg-custom-hover text-white"
           >
             {loading ? (
               <span className="loading loading-spinner loading-sm"></span>

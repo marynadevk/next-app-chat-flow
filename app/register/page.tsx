@@ -118,7 +118,7 @@ const RegisterPage = () => {
           />
           <button
             type="button"
-            className="btn btn-outline hover:bg-[#5e548e]"
+            className="btn btn-outline hover:bg-custom-primary"
             onClick={handleRefreshAvatar}
           >
             New Avatar
@@ -192,7 +192,7 @@ const RegisterPage = () => {
         <div>
           <button
             type="submit"
-            className="btn btn-block bg-[#5e548e] hover:bg-[#e0b1cb] text-white"
+            className="btn btn-block bg-custom-primary hover:bg-custom-hover] text-white"
           >
             {loading ? (
               <span className="loading loading-spinner loading-sm"></span>

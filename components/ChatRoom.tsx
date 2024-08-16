@@ -11,6 +11,7 @@ import { IChatRoom } from '@/interfaces/IChatRoom';
 import { IMessage } from '@/interfaces/IMessage';
 import { createNewMessage } from '@/lib/create-message';
 import MessageCardItem from './MessageCardItem';
+import MessageInput from './MessageInput';
 
 type Props = {
   selectedChatRoom: IChatRoom | null;
@@ -69,17 +70,14 @@ const ChatRoom: FC<Props> = ({ selectedChatRoom }) => {
   console.log('messages', messages);
 
   return (
-    <div className="flex flex-col h-screen">
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-10">
-        {messages.map((message) => (
-          <MessageCardItem
-            key={message.id}
-            message={message}
-            me={me!}
-            other={other!}
-          />
+    <div className='flex flex-col h-screen'>
+      <div ref={messagesContainerRef} className='flex-1 overflow-y-auto p-10'>
+        {messages?.map((message) => (
+          <MessageCardItem key={message.id} message={message} me={me!} other={other!}/>
         ))}
       </div>
+
+      <MessageInput sendMessage={sendMessage} message={messageText} setMessage={setMessageText} image={image} setImage={setImage}/>
     </div>
   );
 };

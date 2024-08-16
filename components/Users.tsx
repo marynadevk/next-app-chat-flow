@@ -47,7 +47,7 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
       setUsers(users);
       setLoading2(false);
     });
-    console.log('users', users);
+
     return () => unsubscribe();
   }, []);
 
@@ -70,41 +70,45 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
   }, [userData]);
 
   const createChat = async (user: IUser) => {
-    // Check if a chatroom already exists for these users
-    const existingChatRoomsQuery = query(collection(dbFirestore, 'chatrooms'), where('users', '==', [userData?.id, user.id]));
-  
+    const existingChatRoomsQuery = query(
+      collection(dbFirestore, 'chatrooms'),
+      where('users', '==', [userData?.id, user.id])
+    );
+
     try {
       const existingChatRoomsSnapshot = await getDocs(existingChatRoomsQuery);
-  
+
       if (existingChatRoomsSnapshot.docs.length > 0) {
-        // Chatroom already exists, handle it accordingly (e.g., show a message)
         console.log('Chatroom already exists for these users.');
         toast.error('Chatroom already exists for these users.');
         return;
       }
-  
-      // Chatroom doesn't exist, proceed to create a new one
+
       const usersData = {
         [userData.id!]: userData,
         [user.id!]: user,
       };
-  
+
       const chatroomData = {
         users: [userData.id, user.id],
         usersData,
         timestamp: serverTimestamp(),
         lastMessage: null,
       };
-  
-      const chatroomRef = await addDoc(collection(dbFirestore, 'chatrooms'), chatroomData);
+
+      const chatroomRef = await addDoc(
+        collection(dbFirestore, 'chatrooms'),
+        chatroomData
+      );
       console.log('Chatroom created with ID:', chatroomRef.id);
-      setActiveTab("chatrooms");
+      setActiveTab('chatrooms');
     } catch (error) {
       console.error('Error creating or checking chatroom:', error);
-    }};
-
+    }
+  };
 
   const openChat = async (chatroom: IChatRoom) => {
+    console.log('Chatroom selected:', chatroom);
     const data = {
       id: chatroom.id,
       myData: userData,
@@ -113,7 +117,8 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
           chatroom.users.filter((id: string) => id !== userData?.id)[0]
         ],
     };
-    console.log('data', data);
+
+    console.log('Chatroom data:', data);
     setSelectedChatRoom(data);
   };
 
@@ -132,22 +137,22 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
       <div className="shadow-lg h-screen overflow-auto mt-4 mb-20">
         <div className="flex flex-col lg:flex-row justify-between p-4 space-y-4 lg:space-y-0">
           <button
-            className={`btn btn-outline ${
-              activeTab === 'users' ? 'btn-primary' : ''
+            className={`btn btn-outline hover:bg-custom-hover ${
+              activeTab === 'users' ? 'text-white border-custom-primary bg-custom-primary' : 'text-custom-primary'
             }`}
             onClick={() => handleTabClick('users')}
           >
             Users
           </button>
           <button
-            className={`btn btn-outline ${
-              activeTab === 'chatrooms' ? 'btn-primary' : ''
+            className={`btn btn-outline hover:bg-custom-hover ${
+              activeTab === 'chatrooms' ? 'text-white border-custom-primary bg-custom-primary' : 'text-custom-primary'
             }`}
             onClick={() => handleTabClick('chatrooms')}
           >
             Chatrooms
           </button>
-          <button className={`btn btn-outline`} onClick={logoutClick}>
+          <button className={`btn btn-outline text-custom-primary hover:bg-custom-hover`} onClick={logoutClick}>
             Logout
           </button>
         </div>
@@ -158,7 +163,7 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
               <h1 className="px-4 text-base font-semibold">Chatrooms</h1>
               {loading && (
                 <div className="flex justify-center items-center h-full">
-                  <span className="loading loading-spinner text-primary"></span>
+                  <span className="loading loading-spinner text-custom-primary"></span>
                 </div>
               )}
               {userChatRooms.map((chatroom: IChatRoom) => (
@@ -171,12 +176,12 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
                   <ChatListItem
                     name={
                       chatroom.usersData[
-                        chatroom.users.filter((id) => id !== userData?.id)[0]
+                        chatroom.users.find((id) => id !== userData?.id)!
                       ].name
                     }
                     avatarUrl={
                       chatroom.usersData[
-                        chatroom.users.filter((id) => id !== userData?.id)[0]
+                        chatroom.users.find((id) => id !== userData?.id)!
                       ].avatarUrl
                     }
                     latestMessage={chatroom.lastMessage}
