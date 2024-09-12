@@ -1,7 +1,6 @@
 import React, { FC } from 'react';
 import moment from 'moment';
-import { IUser } from '@/interfaces/IUser';
-import { IMessage } from '@/interfaces/IMessage';
+import { IUser, IMessage } from '@/interfaces/index';
 
 type Props = {
   message: IMessage;
@@ -19,33 +18,37 @@ const MessageCardItem: FC<Props> = ({ message, me, other }) => {
   };
 
   return (
-    <div key={message.id} className={`flex mb-4 ${isMessageFromMe ? 'justify-end' : 'justify-start'}`}>
+    <div
+      key={message.id}
+      className={`flex mb-4 ${
+        isMessageFromMe ? 'justify-end' : 'justify-start'
+      }`}
+    >
       <div className={`w-10 h-10 ${isMessageFromMe ? 'ml-2 mr-2' : 'mr-2'}`}>
-        {isMessageFromMe && (
-          <img
-            className='w-full h-full object-cover rounded-full'
-            src={me.avatarUrl}
-            alt='Avatar'
-          />
-        )}
-        {!isMessageFromMe && (
-          <img
-            className='w-full h-full object-cover rounded-full'
-            src={other.avatarUrl}
-            alt='Avatar'
-          />
-        )}
+        <img
+          className="w-full h-full object-cover rounded-full"
+          src={isMessageFromMe ? me.avatarUrl : other.avatarUrl}
+          alt="Avatar"
+        />
       </div>
 
-      <div className={` text-white p-2 rounded-md ${isMessageFromMe ? 'bg-custom-hover self-end' : 'bg-custom-primary self-start'}`}>
-        {
-          message.image && <img src={message.image} className='max-h-60 w-60 mb-4' />
-        }
+      <div
+        className={` text-white p-2 rounded-md ${
+          isMessageFromMe
+            ? 'bg-custom-hover self-end'
+            : 'bg-custom-primary self-start'
+        }`}
+      >
+        {message.image && (
+          <img src={message.image} className="max-h-60 w-60 mb-4" />
+        )}
         <p>{message.content}</p>
-        <div className='text-xs text-gray-200'>{formatTimeAgo(message.time)}</div>
+        <div className="text-xs text-gray-200">
+          {formatTimeAgo(message.time)}
+        </div>
       </div>
     </div>
   );
-}
+};
 
 export default MessageCardItem;

@@ -8,6 +8,8 @@ import {
 } from 'firebase/storage';
 import { app } from '@/lib/firebase';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import toast from 'react-hot-toast';
+import { ERROR_MESSAGE } from '@/constants/constants';
 
 type Props = {
   sendMessage: () => Promise<void>;
@@ -47,7 +49,7 @@ const MessageInput: FC<Props> = ({
 
   const handleUpload = async () => {
     if (!file) {
-      console.error('No file selected.');
+      toast.error(ERROR_MESSAGE.noFile);
       return;
     }
 
@@ -100,7 +102,7 @@ const MessageInput: FC<Props> = ({
       />
 
       <FaPaperPlane
-        onClick={() => sendMessage()}
+        onClick={sendMessage}
         className="text-blue-500 cursor-pointer ml-2"
       />
 
@@ -115,18 +117,13 @@ const MessageInput: FC<Props> = ({
           <form method="dialog">
             {imagePreview && (
               <img
-                src={imagePreview}
+                src={imagePreview as string}
                 alt="Uploaded"
                 className="max-h-60 w-60 mb-4"
               />
             )}
             <input type="file" accept="image/*" onChange={handleFileChange} />
-            <div
-              onClick={() => {
-                handleUpload();
-              }}
-              className="btn btn-sm btn-primary"
-            >
+            <div onClick={handleUpload} className="btn btn-sm btn-primary">
               Upload
             </div>
             <progress value={uploadProgress} max="100"></progress>

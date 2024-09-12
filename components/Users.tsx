@@ -10,12 +10,11 @@ import {
   where,
   getDocs,
 } from 'firebase/firestore';
-import { getAuth, signOut, User } from 'firebase/auth';
+import { getAuth, signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import ChatListItem from './ChatListItem';
-import { IUser } from '@/interfaces/IUser';
-import { IChatRoom } from '@/interfaces/IChatRoom';
+import { IUser, IChatRoom } from '@/interfaces/index';
 
 type Props = {
   userData: IUser;
@@ -24,8 +23,11 @@ type Props = {
 
 const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
   const [activeTab, setActiveTab] = useState('chatrooms');
-  const [loading, setLoading] = useState(false);
-  const [loading2, setLoading2] = useState(false);
+  const [loading, setLoading] = useState({
+    users: false,
+    chatrooms: false,
+  });
+  // const [loadingUsers, setLoadingUsers] = useState(false);
   const [users, setUsers] = useState<IUser[]>([]);
   const [userChatRooms, setUserChatRooms] = useState<IChatRoom[]>([]);
   const router = useRouter();
@@ -36,7 +38,7 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
   };
 
   useEffect(() => {
-    setLoading2(true);
+    setLoading({...loading, users: true});
     const tasksQuery = query(collection(dbFirestore, 'users'));
 
     const unsubscribe = onSnapshot(tasksQuery, (snapshot) => {
@@ -45,14 +47,14 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
         return { id: doc.id, ...data };
       });
       setUsers(users);
-      setLoading2(false);
+      setLoading({...loading, users: false});
     });
 
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    setLoading(true);
+    setLoading({...loading, chatrooms: true});
     if (!userData?.id) return;
     const chatRoomsQuery = query(
       collection(dbFirestore, 'chatrooms'),
@@ -63,7 +65,7 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
         const data = doc.data() as IChatRoom;
         return { id: doc.id, ...data };
       });
-      setLoading(false);
+      setLoading({...loading, chatrooms: false});
       setUserChatRooms(chatRooms);
     });
     return () => unsubscribeChatRooms();
@@ -79,7 +81,6 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
       const existingChatRoomsSnapshot = await getDocs(existingChatRoomsQuery);
 
       if (existingChatRoomsSnapshot.docs.length > 0) {
-        console.log('Chatroom already exists for these users.');
         toast.error('Chatroom already exists for these users.');
         return;
       }
@@ -96,19 +97,16 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
         lastMessage: null,
       };
 
-      const chatroomRef = await addDoc(
-        collection(dbFirestore, 'chatrooms'),
-        chatroomData
-      );
-      console.log('Chatroom created with ID:', chatroomRef.id);
+      await addDoc(collection(dbFirestore, 'chatrooms'), chatroomData);
+      toast.success('Chatroom created');
       setActiveTab('chatrooms');
-    } catch (error) {
-      console.error('Error creating or checking chatroom:', error);
+    } catch (error: any) {
+      toast.error('Error creating or checking chatroom');
+      throw new Error(error);
     }
   };
 
   const openChat = async (chatroom: IChatRoom) => {
-    console.log('Chatroom selected:', chatroom);
     const data = {
       id: chatroom.id,
       myData: userData,
@@ -117,7 +115,6 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
           chatroom.users.filter((id: string) => id !== userData?.id)[0]
         ],
     };
-    console.log('Chatroom data:', data);
     setSelectedChatRoom(data);
   };
 
@@ -131,27 +128,32 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
       });
   };
 
+  const tabs = [
+    { label: 'Users', value: 'users' },
+    { label: 'Chatrooms', value: 'chatrooms' },
+  ];
+
   return (
     <>
       <div className="shadow-lg h-screen overflow-auto mt-4 mb-20">
         <div className="flex flex-col lg:flex-row justify-between p-4 space-y-4 lg:space-y-0">
+          {tabs.map((tab) => (
+            <button
+              key={tab.value}
+              className={`btn btn-outline hover:bg-custom-hover ${
+                activeTab === tab.value
+                  ? 'text-white border-custom-primary bg-custom-primary'
+                  : 'text-custom-primary'
+              }`}
+              onClick={() => handleTabClick(tab.value)}
+            >
+              {tab.label}
+            </button>
+          ))}
           <button
-            className={`btn btn-outline hover:bg-custom-hover ${
-              activeTab === 'users' ? 'text-white border-custom-primary bg-custom-primary' : 'text-custom-primary'
-            }`}
-            onClick={() => handleTabClick('users')}
+            className={`btn btn-outline text-custom-primary hover:bg-custom-hover`}
+            onClick={logoutClick}
           >
-            Users
-          </button>
-          <button
-            className={`btn btn-outline hover:bg-custom-hover ${
-              activeTab === 'chatrooms' ? 'text-white border-custom-primary bg-custom-primary' : 'text-custom-primary'
-            }`}
-            onClick={() => handleTabClick('chatrooms')}
-          >
-            Chatrooms
-          </button>
-          <button className={`btn btn-outline text-custom-primary hover:bg-custom-hover`} onClick={logoutClick}>
             Logout
           </button>
         </div>
@@ -184,7 +186,7 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
                       ].avatarUrl
                     }
                     latestMessage={chatroom.lastMessage}
-                    type={'chat'}
+                    isUsers={false}
                   />
                 </div>
               ))}
@@ -211,7 +213,7 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
                       name={user.name}
                       avatarUrl={user.avatarUrl}
                       latestMessage={''}
-                      type={'user'}
+                      isUsers
                     />
                   )}
                 </div>

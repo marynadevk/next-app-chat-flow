@@ -4,9 +4,13 @@ import {
   doc,
   serverTimestamp,
   updateDoc,
+  onSnapshot,
+  query,
+  where,
+  orderBy,
 } from 'firebase/firestore';
 import { dbFirestore } from '@/lib/firebase';
-import { IUser } from '@/interfaces/IUser';
+import { IUser, IMessage } from '@/interfaces/index';
 
 export const createNewMessage = async (
   chatRoomId: string,
@@ -33,4 +37,26 @@ export const createNewMessage = async (
   } catch (error: any) {
     throw new Error('Error sending message:', error.message);
   }
+};
+
+export const getMessages = (
+  chatRoomId: string,
+  setMessages: React.Dispatch<React.SetStateAction<IMessage[]>>
+) => {
+  const unsubscribe = onSnapshot(
+    query(
+      collection(dbFirestore, 'messages'),
+      where('chatRoomId', '==', chatRoomId),
+      orderBy('time', 'asc')
+    ),
+    (snapshot) => {
+      const messages = snapshot.docs.map((doc) => {
+        const data = doc.data() as IMessage;
+        return { id: doc.id, ...data };
+      });
+      setMessages(messages);
+    }
+  );
+
+  return unsubscribe;
 };
