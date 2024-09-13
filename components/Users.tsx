@@ -1,20 +1,15 @@
 'use client';
 import { FC, useEffect, useState } from 'react';
+
 import { dbFirestore, app } from '@/lib/firebase';
-import {
-  collection,
-  onSnapshot,
-  query,
-  addDoc,
-  serverTimestamp,
-  where,
-  getDocs,
-} from 'firebase/firestore';
+import { query, addDoc, serverTimestamp, where, getDocs, collection } from 'firebase/firestore';
 import { getAuth, signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import ChatListItem from './ChatListItem';
 import { IUser, IChatRoom } from '@/interfaces/index';
+import { ERROR_MESSAGE } from '@/constants/constants';
+import { fetchSnapshot } from '@/lib/firebaseMethods';
 
 type Props = {
   userData: IUser;
@@ -27,7 +22,6 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
     users: false,
     chatrooms: false,
   });
-  // const [loadingUsers, setLoadingUsers] = useState(false);
   const [users, setUsers] = useState<IUser[]>([]);
   const [userChatRooms, setUserChatRooms] = useState<IChatRoom[]>([]);
   const router = useRouter();
@@ -38,36 +32,14 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
   };
 
   useEffect(() => {
-    setLoading({...loading, users: true});
-    const tasksQuery = query(collection(dbFirestore, 'users'));
-
-    const unsubscribe = onSnapshot(tasksQuery, (snapshot) => {
-      const users = snapshot.docs.map((doc) => {
-        const data = doc.data() as IUser;
-        return { id: doc.id, ...data };
-      });
-      setUsers(users);
-      setLoading({...loading, users: false});
-    });
-
+    const unsubscribe = fetchSnapshot('users', setLoading, setUsers);
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    setLoading({...loading, chatrooms: true});
     if (!userData?.id) return;
-    const chatRoomsQuery = query(
-      collection(dbFirestore, 'chatrooms'),
-      where('users', 'array-contains', userData.id)
-    );
-    const unsubscribeChatRooms = onSnapshot(chatRoomsQuery, (snapshot) => {
-      const chatRooms = snapshot.docs.map((doc) => {
-        const data = doc.data() as IChatRoom;
-        return { id: doc.id, ...data };
-      });
-      setLoading({...loading, chatrooms: false});
-      setUserChatRooms(chatRooms);
-    });
+    const condition = where('users', 'array-contains', userData.id);
+    const unsubscribeChatRooms = fetchSnapshot('chatrooms', setLoading, setUserChatRooms, condition);
     return () => unsubscribeChatRooms();
   }, [userData]);
 
@@ -81,7 +53,7 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
       const existingChatRoomsSnapshot = await getDocs(existingChatRoomsQuery);
 
       if (existingChatRoomsSnapshot.docs.length > 0) {
-        toast.error('Chatroom already exists for these users.');
+        toast.error(ERROR_MESSAGE.chatroomExist);
         return;
       }
 
@@ -101,7 +73,7 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
       toast.success('Chatroom created');
       setActiveTab('chatrooms');
     } catch (error: any) {
-      toast.error('Error creating or checking chatroom');
+      toast.error(ERROR_MESSAGE.chatroom);
       throw new Error(error);
     }
   };
@@ -124,7 +96,8 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
         router.push('/login');
       })
       .catch((error) => {
-        console.error('Error logging out:', error);
+        toast.error(ERROR_MESSAGE.logout);
+        throw new Error(ERROR_MESSAGE.logout, error);
       });
   };
 
@@ -133,6 +106,7 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
     { label: 'Chatrooms', value: 'chatrooms' },
   ];
 
+  console.log(loading)
   return (
     <>
       <div className="shadow-lg h-screen overflow-auto mt-4 mb-20">
@@ -162,7 +136,7 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
           {activeTab === 'chatrooms' && (
             <>
               <h1 className="px-4 text-base font-semibold">Chatrooms</h1>
-              {loading && (
+              {loading.chatrooms && (
                 <div className="flex justify-center items-center h-full">
                   <span className="loading loading-spinner text-custom-primary"></span>
                 </div>
@@ -196,7 +170,7 @@ const Users: FC<Props> = ({ userData, setSelectedChatRoom }) => {
           {activeTab === 'users' && (
             <>
               <h1 className="mt-4 px-4 text-base font-semibold">Users</h1>
-              {loading2 && (
+              {loading.users && (
                 <div className="flex justify-center items-center h-full">
                   <span className="loading loading-spinner text-primary"></span>
                 </div>

@@ -60,3 +60,22 @@ export const getMessages = (
 
   return unsubscribe;
 };
+
+export const fetchSnapshot = (
+  collectionName: string,
+  setLoading: (loading: any) => void,
+  callback: (data: any) => void,
+  condition?: any
+) => {
+  const q = condition
+    ? query(collection(dbFirestore, collectionName), condition)
+    : collection(dbFirestore, collectionName);
+
+  setLoading((prev: any) => ({ ...prev, [collectionName]: true }));
+
+  return onSnapshot(q, (snapshot) => {
+    const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    callback(data);
+    setLoading((prev: any) => ({ ...prev, [collectionName]: false }));
+  });
+};
